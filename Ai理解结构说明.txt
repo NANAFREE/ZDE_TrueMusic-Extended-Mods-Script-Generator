@@ -1,0 +1,129 @@
+└─True Music Addon
+    │  preview.png 封面
+    │  workshop.txt mods信息 需要更改title 和 description
+    │
+    └─Contents
+        └─mods
+            └─truemusic_addon  Mods 本体文件夹 也是最后需要输出移动的 文件夹名字也需要更改成mods名称
+                │  mod.info Mods的基本信息 需要更改name 和 id 
+                │  poster.png Mods封面
+                │
+                └─media
+                    ├─lua
+                    │  ├─server
+                    │  │  └─Items
+                    │  │          TCGLoadingTCBoombox.lua
+                    │  │          TCGLoadingTCVinylplayer.lua
+                    │  │
+                    │  └─shared
+                    │      │  TCGMusicDefenitionsTCBoombox.lua
+                    │      │  TCGMusicDefenitionsTCVinylplayer.lua
+                    │      │
+                    │      └─Translate 原来是没有这个文件夹的需要手动创建 当ogg生成完成后再能进行这一步
+                    │          └─CN 原来是没有这个文件夹的需要手动创建
+                    │                  ItemName_CN.txt 这个文件需要手动创建然后根据TCBoombox 和TCVinylplayer文件夹里面的文件名称进行按照规则填写
+                    │
+                    ├─scripts
+                    │      TCGMusicScriptTCBoombox.txt
+                    │      TCGMusicScriptTCVinylplayer.txt
+                    │      TCGSoundsTCBoombox.txt
+                    │      TCGSoundsTCVinylplayer.txt
+                    │
+                    ├─textures
+                    │  └─WorldItems
+                    └─yourMusic 需要添加音乐文件的地方 本来里面是Mp3文件，点击exe后转换成了ogg然后需要手动删除mp3
+                        │  AddYourMusicToTheMod.cs
+                        │  AddYourMusicToTheMod.exe 运行这个exe将TCBoombox 和TCVinylplayer这两个文件夹内的mp3文件转换成ogg文件 运行完成后需要手动删除mp3文件 然后除了这两个文件夹 yourMusic内的其他文件和文件夹都全部删除只留下这两个
+                        │  DeleteYourMusicFromTheMod.cs
+                        │  DeleteYourMusicFromTheMod.exe
+                        │  readmeEN.txt
+                        │  readmeRU.txt
+                        │
+                        ├─audioConverter
+                        │      batch-example.bat
+                        │      ChangeLog.txt
+                        │      libflac-8.dll
+                        │      libgcc_s_sjlj-1.dll
+                        │      libgomp-1.dll
+                        │      libid3tag-0.dll
+                        │      libmad-0.dll
+                        │      libmp3lame-0.dll
+                        │      libogg-0.dll
+                        │      libpng16-16.dll
+                        │      libsox-3.dll
+                        │      libssp-0.dll
+                        │      libvorbis-0.dll
+                        │      libvorbisenc-2.dll
+                        │      libvorbisfile-3.dll
+                        │      libwavpack-1.dll
+                        │      libwinpthread-1.dll
+                        │      LICENSE.GPL.txt
+                        │      README.txt
+                        │      README.win32.txt
+                        │      sox.exe
+                        │      sox.pdf
+                        │      soxformat.pdf
+                        │      soxi.pdf
+                        │      wget.exe
+                        │      wget.ini
+                        │      zlib1.dll
+                        │
+                        ├─pictureConverter
+                        │      convert.exe
+                        │
+                        ├─TCBoombox 在这里需要添加mp3
+                        │      qinghuangdao.ogg 测试文件
+                        │      Rock.ogg 测试文件
+                        │      ShaSiNaGeShiJiaZhuangRen.ogg 测试文件
+                        │
+                        └─TCVinylplayer 这里也是一样 但是没有删掉mp3 点击exe完成生成ogg后需要手动删除mp3
+                                qinghuangdao.mp3 测试文件
+                                qinghuangdao.ogg 测试文件
+                                Rock.mp3 测试文件
+                                Rock.ogg 测试文件
+                                ShaSiNaGeShiJiaZhuangRen.mp3 测试文件
+                                ShaSiNaGeShiJiaZhuangRen.ogg 测试文件
+
+具体文件的内容：
+workshop.txt:
+version=1
+id=
+title= 需要填写
+description= 需要填写
+tags=Build 41;Multiplayer;Pop Culture
+visibility=unlisted
+
+mod.info:
+name=需要填写
+poster=poster.png
+id=需要填写 一般是name + _mod
+require=truemusic
+description=
+
+ItemName_CN.txt:
+ItemName_CN = {
+             ItemName_Tsarcraft.Cassetteqinghuangdao = "磁带/万能青年旅店-秦皇岛",
+             ItemName_Tsarcraft.Vinylqinghuangdao = "黑胶/万能青年旅店-秦皇岛",
+             ItemName_Tsarcraft.CassetteRock = "磁带/万能青年旅店-大石碎胸口",
+             ItemName_Tsarcraft.VinylRock = "黑胶/万能青年旅店-大石碎胸口",
+             ItemName_Tsarcraft.CassetteShaSiNaGeShiJiaZhuangRen = "磁带/万能青年旅店-杀死那个石家庄人",
+             ItemName_Tsarcraft.VinylShaSiNaGeShiJiaZhuangRen = "黑胶/万能青年旅店-杀死哪个石家庄人",
+}
+这个文件的编写逻辑是首先ItemName_Tsarcraft.Cassette + ogg文件的名称 比如这里在TCBoombox和TCVinylplayer文件夹里面的ogg文件名称分别是qinghuangdao所以是 + qinghuangdao
+然后是ItemName_Tsarcraft.Vinyl + ogg文件的名称 同理是 + qinghuangdao
+TCBoombox和TCVinylplayer里有几个文件这里就有对应的两条数据，分别代表磁带和黑胶，因为ogg的名称不能是中午，但这里的名称设定可以是中文
+
+
+整体运行顺序：
+首先运行脚本后需要选择目录选择到True Music Addon后检测一下是否和规定好的目录一样，一样后开始下列操作
+1.修改workshop.txt和mod.info中的信息
+2.在TCVinylplayer和TCBoombox文件夹内添加音乐文件，注意文件名不能是中文，且文件格式只能是mp3
+3.运行AddYourMusicToTheMod.exe将mp3文件转换成ogg文件
+4.手动删除mp3文件
+5.在yourMusic文件夹下除了TCBoombox和TCVinylplayer文件夹外，其他文件和文件夹都删除
+6.在shared/Translate/CN文件夹下创建ItemName_CN.txt文件，并按照规则填写
+7.确保ItemName_CN.txt文件和ogg文件名称对应
+8.把mods下的文件夹复制到TrueMusicAddon的根目录下并重命名为truemusicaddon + 设定好的title
+
+
+

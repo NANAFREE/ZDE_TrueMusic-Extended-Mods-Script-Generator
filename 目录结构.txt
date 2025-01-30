@@ -1,0 +1,46 @@
+# True Music Addon
+#     │  preview.png   封面
+#     │  workshop.txt    mods信息  需要更改title 和 description
+#     │
+#     └─Contents
+#         └─mods    
+#             └─truemusic_addon   Mods本体文件夹 也是最后需要输出移动的 文件夹名字也需要更改成mods名称
+#                 │  mod.info  Mods的基本信息 需要更改name 和 id 
+#                 │  poster.png  Mods封面
+#                 │
+#                 └─media
+#                     ├─lua
+#                     │  ├─server
+#                     │  │  └─Items
+#                     │  │          TCGLoadingTCBoombox.lua
+#                     │  │          TCGLoadingTCVinylplayer.lua
+#                     │  │
+#                     │  └─shared
+#                     │      │  TCGMusicDefenitionsTCBoombox.lua
+#                     │      │  TCGMusicDefenitionsTCVinylplayer.lua
+#                     │      │
+#                     │      └─Translate
+#                     │          └─CN
+#                     │                  ItemName_CN.txt
+#                     │
+#                     ├─scripts
+#                     │      TCGMusicScriptTCBoombox.txt
+#                     │      TCGMusicScriptTCVinylplayer.txt
+#                     │      TCGSoundsTCBoombox.txt
+#                     │      TCGSoundsTCVinylplayer.txt
+#                     │
+#                     ├─textures
+#                     │  └─WorldItems
+#                     └─yourMusic   需要添加音乐文件的地方 本来里面是Mp3文件，点击exe后转换成了ogg然后需要手动删除mp3
+#                         ├─TCBoombox   在这里需要添加mp3
+#                         │      qinghuangdao.ogg 测试文件
+#                         │      Rock.ogg 测试文件
+#                         │      ShaSiNaGeShiJiaZhuangRen.ogg 测试文件
+#                         │
+#                         └─TCVinylplayer 这里也是一样 但是没有删掉mp3 点击exe完成生成ogg后需要手动删除mp3
+#                                 qinghuangdao.mp3 测试文件
+#                                 qinghuangdao.ogg 测试文件
+#                                 Rock.mp3 测试文件
+#                                 Rock.ogg 测试文件
+#                                 ShaSiNaGeShiJiaZhuangRen.mp3 测试文件
+#                                 ShaSiNaGeShiJiaZhuangRen.ogg 测试文件
