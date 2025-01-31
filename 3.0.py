@@ -1,6 +1,5 @@
 import os
 import shutil
-import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 
@@ -48,7 +47,7 @@ class TrueMusicGenerator:
         ttk.Label(info_frame, text="模组标题:").grid(row=0, column=0, sticky='w')
         self.entry_title = ttk.Entry(info_frame, width=40)
         self.entry_title.grid(row=0, column=1, padx=5, sticky='ew')
-        self.create_tooltip(self.entry_title, "在创意工坊显示的标题")
+        self.create_tooltip(self.entry_title, "在创意工坊显示的名称")
 
         ttk.Label(info_frame, text="模组描述:").grid(row=1, column=0, sticky='w', pady=5)
         self.entry_desc = ttk.Entry(info_frame, width=40)
@@ -60,13 +59,24 @@ class TrueMusicGenerator:
         self.entry_id.grid(row=2, column=1, padx=5, sticky='ew')
         self.create_tooltip(self.entry_id, "英文+数字组合，如my_music_01")
 
+        ttk.Label(info_frame, text="导出文件夹名称:").grid(row=3, column=0, sticky='w', pady=5)
+        self.entry_export_name = ttk.Entry(info_frame, width=40)
+        self.entry_export_name.grid(row=3, column=1, padx=5, sticky='ew')
+        self.entry_export_name.insert(0, "TrueMusicaddon_")  # 默认名称
+        self.create_tooltip(self.entry_export_name, "自定义导出文件夹的名称")
+
         # 操作按钮
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(pady=10)
 
-        ttk.Button(btn_frame, text="开始生成", command=self.start_process).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="清理目录", command=self.clean_dirs).grid(row=0, column=1, padx=5)
-        ttk.Button(btn_frame, text="使用帮助", command=self.show_help).grid(row=0, column=2, padx=5)
+        self.btn_start = ttk.Button(btn_frame, text="开始生成", command=self.start_process)
+        self.btn_start.grid(row=0, column=0, padx=5)
+
+        self.btn_clean = ttk.Button(btn_frame, text="清理目录", command=self.clean_dirs, state=tk.DISABLED)
+        self.btn_clean.grid(row=0, column=1, padx=5)
+
+        self.btn_export = ttk.Button(btn_frame, text="导出Mods", command=self.export_mods, state=tk.DISABLED)
+        self.btn_export.grid(row=0, column=2, padx=5)
 
         # 日志区域
         self.log_area = scrolledtext.ScrolledText(main_frame, height=15, wrap=tk.WORD)
@@ -196,7 +206,6 @@ class TrueMusicGenerator:
             # 更新mod.info文件
             self.update_mod_info_file(operation_directory, name_entry, id_entry)
 
-            # 示例：自动运行转换程序
             converter_path = os.path.join(
                 operation_directory,
                 "Contents", "mods", "truemusic_addon",
@@ -204,11 +213,14 @@ class TrueMusicGenerator:
             )
 
             if os.path.exists(converter_path):
-                self.log("正在转换MP3文件为OGG...", 'info')
-                subprocess.run(converter_path, check=True, shell=True)
-                self.log("转换完成！", 'success')
+                self.log("请手动运行转换程序 AddYourMusicToTheMod.exe 来转换MP3文件为OGG", 'info')
+                messagebox.showinfo("提示", f"请手动运行转换程序: {converter_path}")
             else:
                 self.log("⚠️ 未找到转换程序，请手动运行AddYourMusicToTheMod.exe", 'warning')
+                messagebox.showwarning("警告", "未找到转换程序，请手动运行 AddYourMusicToTheMod.exe")
+
+            # 启用清理目录按钮
+            self.btn_clean.config(state=tk.NORMAL)
 
             messagebox.showinfo("完成", "处理成功！请检查输出目录")
 
@@ -221,6 +233,32 @@ class TrueMusicGenerator:
         operation_directory = self.entry_mod.get()
         self.organize_mods(operation_directory)
 
+        # 启用导出Mods按钮
+        self.btn_export.config(state=tk.NORMAL)
+
+    def export_mods(self):
+        """导出处理后的mods目录"""
+        operation_directory = self.entry_mod.get()
+        mods_source_dir = os.path.join(operation_directory, 'Contents', 'mods', 'truemusic_addon')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # 获取用户输入的导出名称
+        export_name = self.entry_export_name.get().strip()
+        if not export_name:
+            export_name = "TrueMusicaddon_"  # 默认名称
+
+        # 构建目标目录路径
+        mods_target_dir = os.path.join(script_dir, export_name)
+
+        try:
+            # 复制mods目录及其内容到脚本所在目录
+            shutil.copytree(mods_source_dir, mods_target_dir)
+            self.log(f"mods目录已导出到: {mods_target_dir}", 'success')
+            messagebox.showinfo("完成", f"mods目录已导出到: {mods_target_dir}")
+        except Exception as e:
+            self.log(f"导出mods目录时出错: {str(e)}", 'error')
+            messagebox.showerror("错误", f"导出mods目录时出错:\n{str(e)}")
+
     def show_help(self):
         """显示帮助信息"""
         help_text = """
@@ -232,7 +270,8 @@ class TrueMusicGenerator:
            - 描述：简单的模组介绍
            - ID：唯一标识符（建议英文）
         4. 点击[开始生成]自动处理文件
-        5. 最后点击[清理目录]删除临时文件
+        5. 点击[清理目录]删除临时文件
+        6. 点击[导出Mods]导出处理后的mods目录
         
         【注意事项】
         - MP3文件名不要包含中文或特殊字符
@@ -259,15 +298,15 @@ class TrueMusicGenerator:
             filenames.append(current)
         return filenames
 
-    def move_mp3_files(self, source_dir, target_dir, title, description, name, id, log_text):
-        """移动MP3文件并重命名"""
+    def move_mp3_files(self, source_dir, target_dir, title, description, name_entry, id_entry):
+        # 移动MP3文件并重命名
         # 确保源目录存在
         if not os.path.exists(source_dir):
             self.log(f"MP3源目录 {source_dir} 不存在", 'error')
             return
 
         # 遍历源目录中的所有MP3文件并排序
-        mp3_files = [filename for filename in os.listdir(source_dir) if filename.endswith('.mp3')]
+        mp3_files = [filename for filename in os.listdir(source_dir) if filename.lower().endswith('.mp3')]
         mp3_files.sort()
 
         # 生成新的文件名
@@ -411,7 +450,7 @@ class TrueMusicGenerator:
                 for item in os.listdir(target_dir):
                     item_path = os.path.join(target_dir, item)
 
-                    if not item.endswith('.mp3'):
+                    if not item.lower().endswith('.mp3'):
                         try:
                             if os.path.isfile(item_path):
                                 os.remove(item_path)
@@ -423,58 +462,76 @@ class TrueMusicGenerator:
             else:
                 self.log(f"目录 {target_dir} 不存在", 'error')
 
-    def export_mods(self):
-        """导出mods目录到脚本的根目录"""
+    def clean_dirs(self):
+        """清理目录"""
         operation_directory = self.entry_mod.get()
-        source_mods_dir = os.path.join(operation_directory, 'Contents', 'mods', 'truemusic_addon')
-        target_mods_dir = os.path.join(os.path.dirname(__file__), 'truemusic_addon')
+        self.organize_mods(operation_directory)
 
-        if not os.path.exists(source_mods_dir):
-            self.log(f"源mods目录 {source_mods_dir} 不存在", 'error')
-            return
+        # 启用导出Mods按钮
+        self.btn_export.config(state=tk.NORMAL)
 
-        # 确保目标目录不存在，如果存在则删除
-        if os.path.exists(target_mods_dir):
-            try:
-                shutil.rmtree(target_mods_dir)
-                self.log(f"已删除旧的目标mods目录: {target_mods_dir}", 'success')
-            except Exception as e:
-                self.log(f"删除旧的目标mods目录时出错: {e}", 'error')
-                return
+    def export_mods(self):
+        """导出处理后的mods目录"""
+        operation_directory = self.entry_mod.get()
+        mods_source_dir = os.path.join(operation_directory, 'Contents', 'mods', 'truemusic_addon')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # 获取用户输入的导出名称
+        export_name = self.entry_export_name.get().strip()
+        if not export_name:
+            export_name = "TrueMusicaddon_"  # 默认名称
+
+        # 构建目标目录路径
+        mods_target_dir = os.path.join(script_dir, export_name)
 
         try:
-            # 复制源mods目录到目标目录
-            shutil.copytree(source_mods_dir, target_mods_dir)
-            self.log(f"mods目录已成功导出到: {target_mods_dir}", 'success')
+            # 复制mods目录及其内容到脚本所在目录
+            shutil.copytree(mods_source_dir, mods_target_dir)
+            self.log(f"mods目录已导出到: {mods_target_dir}", 'success')
+            messagebox.showinfo("完成", f"mods目录已导出到: {mods_target_dir}")
         except Exception as e:
-            self.log(f"导出mods目录时出错: {e}", 'error')
+            self.log(f"导出mods目录时出错: {str(e)}", 'error')
+            messagebox.showerror("错误", f"导出mods目录时出错:\n{str(e)}")
 
-    def process_files(self, operation_directory, mp3_directory, title, description, name, mod_id):
-        # 定义目标目录，基于用户选择的目录
-        target_directory1 = os.path.join(operation_directory, 'Contents', 'mods', 'truemusic_addon', 'media', 'yourMusic', 'TCBoombox')
-        target_directory2 = os.path.join(operation_directory, 'Contents', 'mods', 'truemusic_addon', 'media', 'yourMusic', 'TCVinylplayer')
+    def show_help(self):
+        """显示帮助信息"""
+        help_text = """
+        【使用说明】
+        1. 选择MOD根目录：包含workshop.txt的文件夹
+        2. 选择MP3目录：所有MP3文件必须使用英文名！
+        3. 填写模组信息：
+           - 标题：创意工坊显示的名称
+           - 描述：简单的模组介绍
+           - ID：唯一标识符（建议英文）
+           - 导出文件夹名称：自定义导出文件夹的名称
+        4. 点击[开始生成]自动处理文件
+        5. 点击[清理目录]删除临时文件
+        6. 点击[导出Mods]导出处理后的mods目录
+        
+        【注意事项】
+        - MP3文件名不要包含中文或特殊字符
+        - 转换完成后会自动生成中文名称映射
+        - 遇到错误请检查日志中的红色提示
+        """
+        messagebox.showinfo("使用帮助", help_text.strip())
 
-        # 检查目标目录是否存在
-        if not os.path.exists(target_directory1):
-            self.log(f"目标目录 {target_directory1} 不存在，请检查目录结构", 'error')
-            return
+    def generate_new_filenames(self, count):
+        """生成新的文件名，使用字母组合"""
+        def get_next_filename(current):
+            if not current:
+                return 'a'
+            last_char = current[-1]
+            if last_char == 'z':
+                return self.get_next_filename(current[:-1]) + 'a'
+            else:
+                return current[:-1] + chr(ord(last_char) + 1)
 
-        if not os.path.exists(target_directory2):
-            self.log(f"目标目录 {target_directory2} 不存在，请检查目录结构", 'error')
-            return
-
-        # 移动MP3文件并获取映射内容
-        mapping_content = self.move_mp3_files(mp3_directory, operation_directory, title, description, name, mod_id, self.log_area)
-
-        # 生成ItemName_CN.txt文件
-        base_dir = operation_directory
-        self.generate_item_file(mapping_content, base_dir)
-
-        # 更新workshop.txt文件
-        self.update_workshop_file(operation_directory, title, description)
-
-        # 更新mod.info文件
-        self.update_mod_info_file(operation_directory, name, mod_id)
+        filenames = []
+        current = ''
+        for _ in range(count):
+            current = get_next_filename(current)
+            filenames.append(current)
+        return filenames
 
 
 if __name__ == "__main__":
